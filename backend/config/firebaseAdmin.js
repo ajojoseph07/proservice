@@ -7,14 +7,16 @@ const serviceAccountPath = path.resolve(
   "serviceAccountKey.json"
 );
 
-const serviceAccount = JSON.parse(
-  fs.readFileSync(serviceAccountPath, "utf8")
-);
+if (!admin.apps.length) {
+  const serviceAccount = JSON.parse(
+    fs.readFileSync(serviceAccountPath, "utf8")
+  );
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+
+  console.log("✅ Firebase Admin initialized");
+}
 
 export const db = admin.firestore();
-
-console.log("✅ Firebase Admin initialized");

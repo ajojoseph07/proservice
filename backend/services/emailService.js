@@ -1,44 +1,33 @@
 import nodemailer from "nodemailer";
-import { env } from "../config/env.js";
 
-console.log("MAIL_USER =", env.MAIL_USER);
-console.log("MAIL_PASS LENGTH =", env.MAIL_PASS?.length);
+// Debug (remove after success)
+console.log("📧 MAIL_USER:", process.env.MAIL_USER ? "OK" : "MISSING");
+console.log("📧 MAIL_PASS:", process.env.MAIL_PASS ? "OK" : "MISSING");
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  port: 587,
+  secure: false,
   auth: {
-    user: env.MAIL_USER,
-    pass: env.MAIL_PASS,
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS, // App password
   },
 });
 
-transporter.verify((err) => {
-  if (err) {
-    console.error("❌ SMTP VERIFY ERROR:", err);
-  } else {
-    console.log("✅ SMTP READY");
-  }
-});
-
-export const sendSupplierMail = async (to, requirement) => {
-  const mailOptions = {
-    from: `"Requirement Alert" <${env.MAIL_USER}>`,
-    to,
-    subject: "New Product Requirement",
+export const sendSupplierMail = async (supplierEmail, data) => {
+  await transporter.sendMail({
+    from: process.env.MAIL_USER,
+    to: supplierEmail,
+    subject: "New Customer Requirement",
     html: `
       <h3>New Requirement Received</h3>
-      <p><b>Category:</b> ${requirement.category}</p>
-      <p><b>Sub Category:</b> ${requirement.subCategory}</p>
-      <p><b>Product:</b> ${requirement.product}</p>
-      <p><b>Quantity:</b> ${requirement.quantity}</p>
-      <p><b>Description:</b> ${requirement.description}</p>
-      <p><b>Contact:</b> ${requirement.contact}</p>
-      <p><b>Name:</b> ${requirement.name}</p>
+      <p><b>Name:</b> ${data.name}</p>
+      <p><b>Category:</b> ${data.category}</p>
+      <p><b>Sub Category:</b> ${data.subCategory}</p>
+      <p><b>Product:</b> ${data.product}</p>
+      <p><b>Quantity:</b> ${data.quantity}</p>
+      <p><b>Description:</b> ${data.description}</p>
+      <p><b>Contact:</b> ${data.contact}</p>
     `,
-  };
-
-  await transporter.sendMail(mailOptions);
-  console.log(`📧 Email sent to ${to}`);
+  });
 };
